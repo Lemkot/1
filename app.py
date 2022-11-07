@@ -45,6 +45,7 @@ shap_image = "Shap_features_importances.png"
 stage_image = "stage.png"
 gender_fail = "gender.png"
 age_fail = "age.png"
+loans = "loans.png"
 
 with st.sidebar:
  st.header("💰 Client analysis")
@@ -96,10 +97,12 @@ if (show_client_details):
     total_income = df_client['AMT_INCOME_TOTAL']
     duration_imployed = - df_client['DAYS_EMPLOYED']
     gender = df_client_full['CODE_GENDER']
+    loan = df_client['AMT_CREDIT']
     age = abs(df_client_full['DAYS_BIRTH'])//365
     st.write('### Age of the client: ', age)
     st.write('### Gender of the client: ', gender)
     st.write('### Total income of the client: ', total_income)
+    st.write('### Credit requested by the client: ', loan)
     st.write('### Working experience of the client in days: ', int(duration_imployed))
     
     
@@ -113,9 +116,36 @@ if (show_comparison):
     st.header('‍Failure to repay the loan by gender')
     st.image('gender.png')
     st.header('Avarage total income of the bank clients: 168797.91')
+    st.header('‍10 highest credits granted by the bank:')
+    st.image('loans.png')
     st.header('‍General distribution of the working experience among the clients of the bank')
     st.image('stage.png')
 
+
+    
+#-------------------------------------------------------
+# Afficher la décision de crédit
+#-------------------------------------------------------
+
+if (show_credit_decision):
+    st.header('‍⚖️ Scoring and Decision of the model')
+
+            #Appel de l'API : 
+
+    API_url = "https://fastapilemishko.herokuapp.com/predict?id_client=" + str(id_client)
+    json_url = get_response(API_url)
+    st.write("## Json {}".format(json_url))
+    API_data = json_url
+    
+    classe_predite = API_data['prediction']
+    if classe_predite == 1:
+        decision = 'Bad Prospect (Loan Refused)'
+        st.write(decision)
+    else:
+        decision = 'Good prospect (Loan Granted)'
+        st.write(decision)
+
+        
     #-------------------------------------------------------
 # Afficher SHAP features importances du client
 #-------------------------------------------------------
@@ -136,31 +166,6 @@ if (shap_local):
 
 
     st.pyplot(fig)
-    
-#-------------------------------------------------------
-# Afficher la décision de crédit
-#-------------------------------------------------------
-
-if (show_credit_decision):
-    st.header('‍⚖️ Scoring and Decision of the model')
-
-            #Appel de l'API : 
-
-    API_url = "https://scoringmodelopen.herokuapp.com/predict?id_client=" + str(id_client)
-    json_url = get_response(API_url)
-    st.write("## Json {}".format(json_url))
-    API_data = json_url
-    
-    classe_predite = API_data['prediction']
-    if classe_predite == 1:
-        decision = 'Bad Prospect (Loan Refused)'
-        st.write(decision)
-    else:
-        decision = 'Good prospect (Loan Granted)'
-        st.write(decision)
-
-        
-
 
         #-------------------------------------------------------
         # Afficher la feature importance globale
